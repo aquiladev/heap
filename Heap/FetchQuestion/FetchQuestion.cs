@@ -1,7 +1,9 @@
+using Heap.Entities;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -14,12 +16,14 @@ namespace Heap.FetchQuestion
     public static class FetchQuestionFunc
     {
         [FunctionName("FetchQuestion")]
-        public static async Task Run(
+        [return: Queue("%Storage:ProcessQueue%", Connection = "Storage:Connection")]
+        public static async Task<string> Run(
             [QueueTrigger("%Storage:QuestionQueue%", Connection = "Storage:Connection")]string message,
+            [Table("%Storage:QuestionTable%", Connection = "Storage:Connection")] CloudTable table,
             ILogger log,
             ExecutionContext context)
         {
-            var config = new ConfigurationBuilder()
+            IConfigurationRoot config = new ConfigurationBuilder()
                 .SetBasePath(context.FunctionAppDirectory)
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables()
@@ -47,12 +51,18 @@ namespace Heap.FetchQuestion
             builder.Path += message;
 
             HttpResponseMessage response = await client.GetAsync(builder.Uri.ToString());
-            if (response.IsSuccessStatusCode)
-            {   
-                var s = await response.Content.ReadAsStringAsync();
-            }
+            response.EnsureSuccessStatusCode();
 
-            log.LogInformation($"C# Queue trigger function processed: {message}");
+            var entry = new QuestionEntity()
+            {
+                PartitionKey = message,
+                RowKey = "",
+                Payload = await response.Content.ReadAsStringAsync()
+            };
+            TableOperation insertOperation = TableOperation.Insert(entry);
+            await table.ExecuteAsync(insertOperation);
+
+            return JsonConvert.SerializeObject(entry);
         }
     }
 }
