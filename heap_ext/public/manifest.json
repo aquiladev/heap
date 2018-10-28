@@ -1,0 +1,40 @@
+{
+  "name": "HeapExt",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "HeapExt extension",
+  "homepage_url": "http://localhost",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "default_locale": "en",
+  "background": {
+    "page": "bg.html",
+    "persistent": true
+  },
+  "options_page": "options.html",
+  "page_action": {
+    "default_icon": "icons/icon19.png",
+    "default_title": "HeapExt",
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "clipboardRead",
+    "contentSettings",
+    "contextMenus",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ethereum.stackexchange.com/*"
+      ],
+      "js": [
+        "js/inject.js"
+      ]
+    }
+  ],
+  "content_security_policy": "default-src 'self'; script-src 'self' 'sha256-GgRxrVOKNdB4LrRsVPDSbzvfdV4UqglmviH9GoBJ5jk='"
+}

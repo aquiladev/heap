@@ -1,0 +1,21 @@
+.actions {
+    float: right;
+}
+
+.btn-process,
+.btn-refresh {
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+    margin-right: 10px;
+    height: 16px;
+    width: 16px;
+}
+
+.btn-process {
+    background: url('~/icons/gear.svg') transparent;
+}
+
+.btn-refresh {
+    background: url('~/icons/refresh.svg') transparent;
+}
